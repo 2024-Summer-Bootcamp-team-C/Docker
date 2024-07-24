@@ -1,0 +1,153 @@
+version: '3'
+
+services:
+    mysql:
+        image: mysql:8.0
+        restart: always
+        container_name: mysql
+        command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+        ports:
+          - "3307:3306"
+        environment:
+            MYSQL_ROOT_HOST: "%"
+            MYSQL_ROOT_PASSWORD: 1234
+            MYSQL_DATABASE: mydatabase
+        networks:
+            - chat_net
+    backend:
+        container_name: backend
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        volumes:
+            - ./backend:/backend
+        command: sh -c "sleep 10 &&
+                python manage.py makemigrations &&
+                python manage.py migrate && 
+                python manage.py runserver 0.0.0.0:8000"
+        restart: on-failure
+        ports:
+            - 8000:8000
+        links:
+            - mysql:mysql
+        depends_on:
+            - mysql
+            - redis
+            - rabbitmq
+        expose:
+            - 8000
+        networks:
+            - chat_net
+    frontend:
+        container_name: frontend
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        command: npm run dev
+        restart: always
+        ports:
+            - 3000:3000
+        volumes:
+            - ./frontend:/frontend
+        depends_on:
+          - backend
+        networks:
+            - chat_net
+    redis:
+        image: redis
+        container_name: redis
+        ports:
+            - "6379:6379"
+        networks:
+            - chat_net
+    rabbitmq:
+        image: "rabbitmq:3-management"
+        container_name: rabbitmq
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        environment:
+            RABBITMQ_DEFAULT_USER: user
+            RABBITMQ_DEFAULT_PASS: password
+        networks:
+            - chat_net
+    celery:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: celery
+        command: celery -A backend worker -l info
+        volumes:
+            - ./backend:/backend
+        depends_on:
+            - backend
+            - rabbitmq
+            - redis
+        networks:
+            - chat_net
+    prometheus:
+        image: prom/prometheus
+        container_name: prometheus
+        volumes:
+            - ./backend/prometheus:/etc/backend/prometheus
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+        ports:
+            - "9090:9090"
+        depends_on:
+            - backend
+        networks:
+            - chat_net
+    grafana:
+        image: grafana/grafana
+        container_name: grafana
+        ports:
+            - "3060:3000"
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+        volumes:
+            - grafana-data:/var/lib/grafana
+            - ./backend/grafana/provisioning:/etc/grafana/provisioning
+        depends_on:
+            - prometheus
+        networks:
+            - chat_net
+    nodeexporter:
+        image: prom/node-exporter:latest
+        container_name: node-exporter
+        volumes:
+            - /proc:/host/proc:ro
+            - /sys:/host/sys:ro
+            - /:/rootfs:ro
+        command:
+            - "--path.procfs=/host/proc"
+            - "--path.sysfs=/host/sys"
+            - "--path.rootfs=/host"
+            - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
+        pid: host
+        ports:
+          - 9100:9100
+        networks:
+            - chat_net
+    cadvisor:
+        image: gcr.io/cadvisor/cadvisor
+        container_name: cadvisor
+        volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:rw
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+            - /dev/disk/:/dev/disk:ro
+        command:
+            - --docker_only
+        ports:
+            - 8080:8080
+        networks:
+            - chat_net
+networks:
+    chat_net:
+        driver: bridge
+
+volumes:
+    grafana-data:

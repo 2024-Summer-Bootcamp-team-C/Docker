@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
+          with:
+    	      submodules: true
+    	      token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v1
@@ -45,7 +48,7 @@ jobs:
       # - name: Run tests
       #   run: |
       #     pytest ./tests/test.py || exit 1
-
+      #
       # - name: Run Pylint
       #   run: |
       #     pylint app tests --rcfile=.pylintrc || exit 1

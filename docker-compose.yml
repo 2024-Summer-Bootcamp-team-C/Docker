@@ -149,6 +149,19 @@ services:
             - 8080:8080
         networks:
             - chat_net
+
+    nginx:
+        container_name: nginx
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+        ports:
+            - 80:80
+        depends_on:
+            - backend
+            - frontend
+        networks:
+            - chat_net
 networks:
     chat_net:
         driver: bridge

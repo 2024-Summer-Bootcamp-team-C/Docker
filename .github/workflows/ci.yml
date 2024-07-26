@@ -50,7 +50,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t my-app-image .
+          docker build -t my-app-image ./backend
 
       - name: Run Docker container and test
         run: |

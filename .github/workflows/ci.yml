@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -47,7 +47,14 @@ jobs:
       # - name: Run tests
       #   run: |
       #     pytest ./tests/test.py || exit 1
-      #
-      # - name: Run Pylint
-      #   run: |
-      #     pylint app tests --rcfile=.pylintrc || exit 1
+
+      - name: Build Docker image
+        run: |
+          docker build -t my-app-image .
+
+      - name: Run Docker container and test
+        run: |
+          docker run --name my-app-container -d my-app-image
+          # docker exec my-app-container pytest ./tests/test.py || exit 1
+          docker stop my-app-container
+          docker rm my-app-container

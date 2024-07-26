@@ -30,12 +30,13 @@ jobs:
         run: |
           echo "Current directory: $(pwd)"
           echo "Directory contents:"
+          cd backend
           ls -R
 
       - name: Install dependencies
         run: |
           if [ -f backend/requirements.txt ]; then
-            pip install -r backend/requirements.txt
+            pip install -r ./backend/requirements.txt
           else
             echo "requirements.txt not found"
             exit 1

@@ -2,7 +2,7 @@ name: CD Pipeline
 
 on:
   workflow_run:
-    workflows: ["CI Pipline"]
+    workflows: ["CI Pipeline"]
     types:
       - completed
 
@@ -16,8 +16,8 @@ jobs:
 
       - name: Prepare SSH key
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY}}" > private_key.pem
-          chomd 600 private_key.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
 
       - name: Test SSH connection
         run: |

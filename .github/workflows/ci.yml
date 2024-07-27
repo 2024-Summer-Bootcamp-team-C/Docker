@@ -88,4 +88,4 @@ jobs:
             docker-compose up --build -d
           EOF
 
-# ssh 열고 테스트
+# pem 첫줄 마지막줄 넣고 테스트

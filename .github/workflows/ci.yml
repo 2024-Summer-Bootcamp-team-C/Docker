@@ -88,4 +88,4 @@ jobs:
             docker-compose up --build -d
           EOF
 
-# pem 첫줄 마지막줄 넣고 테스트
+# EC2 원격 테스트

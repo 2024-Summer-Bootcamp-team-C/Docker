@@ -88,4 +88,4 @@ jobs:
             docker-compose up --build -d
           EOF
 
-# EC2 원격 테스트
+# 변수 설정 다시

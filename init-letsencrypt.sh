@@ -7,7 +7,7 @@ fi
 
 compose_file="docker-compose.yml"
 
-domains=(weinhistory.com)
+domains=(weinjeon.com)
 rsa_key_size=4096
 data_path="./certbot"
 email="pgc0419@gmail.com" # Adding a valid address is strongly recommended
